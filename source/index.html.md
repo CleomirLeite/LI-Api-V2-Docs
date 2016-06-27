@@ -2,10 +2,7 @@
 title: API Reference
 
 language_tabs:
-  - shell
-  - ruby
   - python
-  - javascript
 
 toc_footers:
   - <a href='#'>Sign Up for a Developer Key</a>
@@ -17,173 +14,224 @@ includes:
 search: true
 ---
 
-# Introduction
+# Loja Integrada API V2 - Beta
 
-Welcome to the Kittn API! You can use our API to access Kittn API endpoints, which can get information on various cats, kittens, and breeds in our database.
+API experimental utilizada para gerenciar e administrar os recursos disponíveis na Loja Integrada.
 
-We have language bindings in Shell, Ruby, and Python! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.
-
-This example API documentation page was created with [Slate](https://github.com/tripit/slate). Feel free to edit it and use it as a base for your own API's documentation.
-
-# Authentication
-
-> To authorize, use this code:
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-```
+# Autenticação - integrando.se
 
 ```python
-import kittn
+import json
 
-api = kittn.authorize('meowmeowmeow')
+jwt_example_token = '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.\
+eyJzdG9yZSI6eyJwaG9uZSI6Iis1NSgxMSk5MTM4Mi0xMjkzIiwiZG9tYWluIjoiMjRob3Vycy5jb20iLCJ2ZXJpZmllZCI6dHJ1ZSwiaXNfY29tcGFueSI6IlBKIiwiYWRkcmVzcyI6eyJjb21wbGVtZW50IjoiRG8gbGFkbyBkbyBGQkkiLCJ6aXBjb2RlIjoiMDM1ODYtMDAwIiwibnVtYmVyIjoiNzU2In0sImRvY3VtZW50IjoiMzM1LjAxMC43NzgtODIiLCJpZCI6MTAxMjMsInRlbXBfZG9tYWluIjoidGVtcG9yYXJpby0yNGhvdXJzLmxvamFpbnRlZ3JhZGEuY29tLmJyIn0sInVzZXIiOnsibmFtZSI6IkphY2sgQmF1ZXIiLCJlbWFpbCI6ImphY2suYmF1ZXJAMjRob3Vycy5jb20ifSwiZXhwIjoxNDY3MDM0Nzk2fQ.\
+OH8mfcYEk5TABUwzCq3Gj8FVhfc4KatPsHIAsX-eEzs'''
+header, payload, verify = jwt_example_token.split('.')
+# Necessário para conseguir decodificar a string em base64
+payload += "=" * ((4 - len(data) % 4) % 4)
+payload_dict = json.loads(payload.decode('base64'))
+print payload_dict['store']['domain'] # '24 hours'
 ```
 
-```shell
-# With shell, you can just pass the correct header with each request
-curl "api_endpoint_here"
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-```
-
-> Make sure to replace `meowmeowmeow` with your API key.
-
-Kittn uses API keys to allow access to the API. You can register a new Kittn API key at our [developer portal](http://example.com/developers).
-
-Kittn expects for the API key to be included in all API requests to the server in a header that looks like the following:
-
-`Authorization: meowmeowmeow`
-
-<aside class="notice">
-You must replace <code>meowmeowmeow</code> with your personal API key.
-</aside>
-
-# Kittens
-
-## Get All Kittens
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get()
-```
-
-```shell
-curl "http://example.com/api/kittens"
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let kittens = api.kittens.get();
-```
-
-> The above command returns JSON structured like this:
-
-```json
-[
-  {
-    "id": 1,
-    "name": "Fluffums",
-    "breed": "calico",
-    "fluffiness": 6,
-    "cuteness": 7
-  },
-  {
-    "id": 2,
-    "name": "Max",
-    "breed": "unknown",
-    "fluffiness": 5,
-    "cuteness": 10
-  }
-]
-```
-
-This endpoint retrieves all kittens.
-
-### HTTP Request
-
-`GET http://example.com/api/kittens`
-
-### Query Parameters
-
-Parameter | Default | Description
---------- | ------- | -----------
-include_cats | false | If set to true, the result will also include cats.
-available | true | If set to false, the result will include kittens that have already been adopted.
-
-<aside class="success">
-Remember — a happy kitten is an authenticated kitten!
-</aside>
-
-## Get a Specific Kitten
-
-```ruby
-require 'kittn'
-
-api = Kittn::APIClient.authorize!('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```python
-import kittn
-
-api = kittn.authorize('meowmeowmeow')
-api.kittens.get(2)
-```
-
-```shell
-curl "http://example.com/api/kittens/2"
-  -H "Authorization: meowmeowmeow"
-```
-
-```javascript
-const kittn = require('kittn');
-
-let api = kittn.authorize('meowmeowmeow');
-let max = api.kittens.get(2);
-```
-
-> The above command returns JSON structured like this:
+> Ao decodificar o token a seguinte estrutura em JSON é retornada
 
 ```json
 {
-  "id": 2,
-  "name": "Max",
-  "breed": "unknown",
-  "fluffiness": 5,
-  "cuteness": 10
+  "store": {
+    "phone": "+55(11)91382-1293",
+    "domain": "24hours.com",
+    "verified": true,
+    "is_company": "PJ",
+    "address": {
+      "complement": "Do lado do FBI",
+      "zipcode": "03586-000",
+      "number": "756"
+    },
+    "document": "335.010.778-82",
+    "id": 10123,
+    "temp_domain": "temporario-24hours.lojaintegrada.com.br"
+  },
+  "user": {
+    "name": "Jack Bauer",
+    "email": "jack.bauer@24hours.com"
+  },
+  "exp": 1467034796
 }
 ```
 
-This endpoint retrieves a specific kitten.
+O processo de autenticação consiste em obter um token de autenticação válido por 6 horas, para obtê-lo o usuário precisa ser redirecionado para o painel da Loja Integrada, após a validação das credenciais o usuário será encaminhado para um endereço pré configurado. O token pode ser obtido através do cookies. Abaixo segue uma imagem exemplificando o fluxo de autenticação:
 
-<aside class="warning">Inside HTML code blocks like this one, you can't use Markdown, so use <code>&lt;code&gt;</code> blocks to denote code.</aside>
+![](images/auth-flow-integrandose.png)
+
+O fluxo pode ser descrito nos seguintes passos:
+
+- Redirecionar o usuário para `https://app.lojaintegrada.com.br?integrandose=true`;
+- O usuário fornece as credenciais no painel da Loja Integrada e as confirma;
+- Um novo token é gerado e a página é redirecionada para um endereço pré configurado;
+- A partir desse ponto é possível obter os `AUTH_TOKEN` a partir dos cookies.
+
+
+
+# Temas
+
+## Instala/Ativa novo tema
+
+```python
+import requests, json, base64
+
+api_url = 'https://api.awsli.com.br/v2/themes'
+auth_token = 'MY_AUTH_TOKEN'
+headers = {
+  'Content-Type': 'application/json',
+  'Authorization: Bearer %s' % auth_token
+}
+data_params = {
+  'name': 'clean-store-black-edition',
+  'powered_by': 'Integrandose',
+  'temp_domain_base': 'temporario-24hours.lojaintegrada.com.br',
+  'bundle': None
+}
+
+# Encoda arquivo .zip em base64
+with open('clean-store-black-edition.zip', 'rb') as f:
+  data_params['bundle'] = base64.b64encode(f.read())
+
+# Instala e ativa o novo tema
+response = requests.post(api_url, data=json.dumps(data_params), headers=headers)
+if response.status_code == 201:
+  print 'Tema criado e ativado com sucesso'
+
+print json.dumps(response.json(), indent=2)
+```
+
+> A resposta irá retornar a seguinte estrutura em JSON
+
+```json
+{
+  "response": {
+      "theme_id": 42
+  }
+}
+```
+
+Esse endpoint instala e ativa um novo tema para o lojista
 
 ### HTTP Request
 
-`GET http://example.com/kittens/<ID>`
+`POST http://api.awsli.com.br/v2/themes/`
 
-### URL Parameters
+### Data Params
 
-Parameter | Description
---------- | -----------
-ID | The ID of the kitten to retrieve
+Parâmetro | Tipo | Requerido | Descrição
+--------- | ---- | --------- | ---------
+name | string(unique) | Sim | O nome do tema
+powered_by | string | Não | O autor do tema
+temp_domain_base | string | Sim | O endereço da loja onde o tema base esta instalado
+bundle | base64 | Sim | O arquivo zip contendo a estrutura dos temas
 
+O nome do tema deve ser único, caso já exista um tema com esse nome um erro irá ocorrer informando a inconsistência.
+
+### Status Code Responses
+
+Código | Descrição
+------ | ---------
+201 | Created -- Tema foi criado e ativado com sucesso
+400 | Bad Request -- Ocorreu um erro ao instalar o tema
+409 | Conflict -- O tema já existe
+
+## Atualiza tema
+
+Esse endpoint atualiza os atributos do tema especificado
+
+```python
+import requests
+import json
+
+api_url = 'https://api.awsli.com.br/v2/themes/42'
+auth_token = 'JWT_AUTH_TOKEN'
+headers = {
+  'Content-Type': 'application/json',
+  'Authorization: Bearer %s' % auth_token
+}
+data_params = {}
+
+# Encoda arquivo .zip em base64
+with open('clean-store-black-edition-v2.zip', 'rb') as f:
+  dadata_params['bundle'] = base64.b64encode(f.read())
+
+# Atualiza o bundle do tema
+response = requests.put(api_url, data=json.dumps(data_params), headers=headers)
+if response.status_code == 204:
+  print 'Tema atualizado com sucesso'
+
+# Atualiza o autor do tema
+response = requests.put(api_ul, data=json.dumps({'powered_by' : 'Integrandose-v2'}))
+if response.status_code == 204:
+  print 'Tema atualizado com sucesso'
+```
+
+### HTTP Request
+
+`PUT http://api.awsli.com.br/v2/themes/:ID`
+
+### Query Params - Store
+
+Parâmetro | Tipo | Requerido | Descrição
+--------- | ---- | --------- | ---------
+ID | integer | Sim | O ID da loja
+
+### Data Params
+
+Parâmetro | Tipo | Requerido | Descrição
+--------- | ---- | --------- | ---------
+powered_by | string | Não | O autor do tema
+bundle | base64 | Sim | O arquivo zip contendo a estrutura dos temas
+
+### Status Code Responses
+
+Código | Descrição
+------ | ---------
+204 | No Content -- Tema atualizado com sucesso
+400 | Bad Request -- Erro ao atualizar tema
+404 | Not Found -- Tema não encontrado/instalado
+
+## Ativa tema
+
+```python
+import requests, json
+
+api_url = 'https://api.awsli.com.br/v2/themes/42/state?activate=true'
+auth_token = 'JWT_AUTH_TOKEN'
+headers = {
+  'Content-Type': 'application/json',
+  'Authorization: Bearer %s' % auth_token
+}
+
+# Ativa o tema na loja
+response = requests.put(api_url, data={}, headers=headers)
+if response.status_code == 204:
+  print 'Tema atualizado com sucesso'
+```
+
+Ativa o tema na loja
+
+### HTTP Request
+
+`PUT http://api.awsli.com.br/v2/themes/:ID/state?activate=true`
+
+### Query Params
+
+Parâmetro | Tipo | Requerido | Descrição
+--------- | ---- | --------- | ---------
+ID | integer | Sim | ID da loja
+activate | boolean | Sim | Ativa o tema na loja
+
+### Status Code Responses
+
+Código | Descrição
+------ | ---------
+204 | No Content -- Tema ativado com sucesso
+400 | Bad Request -- Erro ao ativar tema
+404 | Not Found -- Tema não encontrado/instalado
+
+<aside class="notice">O ID da loja é obtido através do payload `AUTH_TOKEN`.</aside>
