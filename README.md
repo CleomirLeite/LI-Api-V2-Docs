@@ -1,7 +1,7 @@
 ## Documentação API V2
 
 Para acessar a documentação é possível subir localmente ou utilizando o [docker](https://docs.docker.com/engine/installation/)
-com o ![docker-compose]()
+com o [docker-compose](https://docs.docker.com/compose/install/).
 
 Ou execute a documentação [localmente](https://github.com/lord/slate#getting-set-up)
 
