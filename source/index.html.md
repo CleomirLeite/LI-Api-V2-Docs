@@ -156,16 +156,16 @@ Código | Descrição
 404 | Bad Request -- A loja modelo não existe
 409 | Conflict -- A loja modelo já está cadastrada como tema
 
-## Atualiza tema `não implementado`
+## Atualiza tema
 
-Esse endpoint atualiza os atributos e arquivos do tema.
+Esse endpoint atualiza os arquivos do tema.
 
 ```python
 import requests
 import json
 
 api_url = 'https://api.awsli.com.br/v2/themes/42'
-auth_token = 'JWT_AUTH_TOKEN' # # JWT Token extraido do query string
+auth_token = 'JWT_AUTH_TOKEN' # JWT Token extraido do query string
 headers = {
   'Content-Type': 'application/json',
   'Authorization: Bearer %s' % auth_token
@@ -174,17 +174,14 @@ data_params = {}
 
 # Encoda arquivo .zip em base64
 with open('clean-store-black-edition-v2.zip', 'rb') as f:
-  dadata_params['bundle'] = base64.b64encode(f.read())
+  data_params['bundle'] = base64.b64encode(f.read())
+
+data_params['bundle_metadata'] = {
+  'images': ['bg_direction_nav-1.png']
+}
 
 # Atualiza o bundle do tema
 response = requests.put(api_url, data=json.dumps(data_params), headers=headers)
-if response.status_code == 204:
-  print 'Tema atualizado com sucesso'
-
-data_params = {'powered_by' : 'Integrandose-v2'}
-
-# Atualiza o autor do tema
-response = requests.put(api_ul, data=json.dumps(data_params))
 if response.status_code == 204:
   print 'Tema atualizado com sucesso'
 ```
