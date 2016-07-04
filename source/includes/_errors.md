@@ -1,5 +1,15 @@
 # Erros Gerais
 
+> As respostas de erro tem a seguinte estrutura em JSON
+
+```json
+{
+  "response": {
+    "message": "Error message"
+  }
+}
+```
+
 Código | Descrição
 ------ | ---------
 401 | Unauthorized -- Não foi possível validar as credenciais
