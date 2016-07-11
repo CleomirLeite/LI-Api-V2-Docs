@@ -55,7 +55,10 @@ print payload_dict['store']['domain'] # '24 hours'
 }
 ```
 
-O processo de autenticação consiste em obter um token de autenticação válido por 6 horas, para obtê-lo o usuário precisa ser redirecionado para o painel da Loja Integrada, após a validação das credenciais o usuário será encaminhado para um endereço pré configurado. O token pode ser obtido através da query string. Abaixo segue uma imagem exemplificando o fluxo de autenticação:
+O processo de autenticação consiste em obter um token de autenticação (verifique a data de expiração na chave `exp` do payload), 
+para obtê-lo o usuário precisa ser redirecionado para o painel da Loja Integrada, após a validação das credenciais o usuário 
+será encaminhado para um endereço pré configurado. O token pode ser obtido através da query string. 
+Abaixo segue uma imagem exemplificando o fluxo de autenticação:
 
 ![](images/auth-flow-integrandose.png)
 
@@ -65,6 +68,76 @@ O fluxo pode ser descrito nos seguintes passos:
 - O usuário fornece as credenciais no painel da Loja Integrada e as confirma;
 - Um novo token é gerado e a página é redirecionada para um endereço pré configurado;
 - A partir desse ponto é possível obter o `auth_token` da query string.
+
+<aside class="notice">Todos os tokens são individuais. As alterações de tema serão processadas apenas para a loja do usuário.</aside>
+
+## Refresh token
+
+Através da mesma requisição é possível obter o `refresh token` que pode ser usado para obter novos tokens de autenticação, pode ser útil para realizar
+alterações caso o usuário tenha alguma pendência financeira. 
+
+Toda autenticação irá retornar duas query strings: 
+
+- `auth_token` - Contém o token de acesso válido para a loja do usuário;
+- `refresh_token` - Contém o token utilizado para gerar novos tokens de acesso para a loja do usuário.
+
+<aside class="warning">O `refresh_token` precisa ser armazenado e apenas utilizado para renovar tokens de acesso, caso ocorra o vazamento do token é necessário comunicar a Loja Integrada!</aside>  
+
+# Tokens
+
+## Renova token de acesso
+
+```python
+  api_url = 'https://api.awsli.com.br/v2/tokens'
+  refresh_token = 'JWT_REFRESH_TOKEN' # Extraido da query string `refresh_token`
+  headers = {
+    'Content-Type': 'application/json',
+    'Authorization: Bearer {}'.format(refresh_token)
+  }
+  r = requests.post(url, data=json.dumps({}), headers=headers)
+  if r.status_code != 201:
+      print 'Erro ao gerar token de acesso'
+      print r.text
+  auth_token = r.json()['response']['auth_token']
+  
+  # Configura token de acesso nos headers
+  headers['Authorization'] = 'Bearer {}'.format(auth_token)
+  # Use um ID fake para testar se o novo token é válido 
+  fake_id = 12183313
+  expect_404 = requests.put(api_url + '/{}/state?activate=false'.format(fake_id), data=json.dumps({}), headers=headers)
+  if expect_404.status == 404:
+    print 'Novo token validado com sucesso'
+```
+
+> A resposta irá retornar a seguinte estrutura em JSON
+
+```json
+{
+  "response": {
+      "auth_token": "",
+      "expiration": 1467034796
+  }
+}
+```
+
+Gera um novo token de acesso para o lojista
+
+### HTTP Request
+
+`POST http://api.awsli.com.br/v2/tokens`
+
+### Request Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
+Authorization | Bearer `refresh_token` 
+
+### Response Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
 
 # Temas
 
@@ -123,7 +196,20 @@ Esse endpoint instala um novo tema para o lojista
 
 ### HTTP Request
 
-`POST http://api.awsli.com.br/v2/themes/`
+`POST http://api.awsli.com.br/v2/themes`
+
+### Request Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
+Authorization | Bearer `auth_token`
+
+### Response Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
 
 ### Data Params
 
@@ -146,6 +232,20 @@ O nome do tema modelo deve ser único, caso já exista um tema modelo com esse n
 
 <aside class="notice">Qualquer referência a {{PATH}} no arquivo css será substituido pelo caminho do CDN.
 Exemplo: url({{PATH}}/minha.img) -> url(https://cdn.awsli.com.br/temasv2/minha.img)</aside>
+
+### Request Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
+Authorization | Bearer `auth_token`
+
+### Response Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
+Location      | Endereço do recurso com conflito (409 status code)
 
 ### Status Code Responses
 
@@ -203,6 +303,19 @@ Parâmetro | Tipo | Requerido | Descrição
 powered_by | string | Não | O autor do tema
 bundle | base64 | Sim | O arquivo zip contendo a estrutura dos temas
 
+### Request Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
+Authorization | Bearer `auth_token`
+
+### Response Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
+
 ### Status Code Responses
 
 Código | Descrição
@@ -211,12 +324,13 @@ Código | Descrição
 400 | Bad Request -- Erro ao atualizar tema
 404 | Not Found -- Tema não encontrado
 
-## Ativa tema
+## Ativa/Desativa tema
 
 ```python
 import requests, json
 
-api_url = 'https://api.awsli.com.br/v2/themes/42/state?activate=true'
+activate = 'true'
+api_url = 'https://api.awsli.com.br/v2/themes/42/state?activate=%s' % activate
 auth_token = 'JWT_AUTH_TOKEN' # JWT Token extraido da query string
 headers = {
   'Content-Type': 'application/json',
@@ -226,31 +340,53 @@ headers = {
 # Ativa o tema na loja
 response = requests.put(api_url, data={}, headers=headers)
 if response.status_code == 204:
-  print 'Tema atualizado com sucesso'
+  print 'Tema ativado com sucesso'
+
+activate = 'false'
+api_url = 'https://api.awsli.com.br/v2/themes/42/state?activate=%s' % activate
+response = requests.put(api_url, data={}, headers=headers)
+
+# Desativa o tema instalado previamente
+if response.status_code == 204:
+  print 'Tema desativado com sucesso'
 ```
 
-Ativa o tema na loja
+Ativa ou desativa um tema específico na loja
 
 ### HTTP Request
 
 `PUT http://api.awsli.com.br/v2/themes/:ID/state?activate=true`
+`PUT http://api.awsli.com.br/v2/themes/:ID/state?activate=false`
 
 ### Query Params
 
 Parâmetro | Tipo | Requerido | Descrição
 --------- | ---- | --------- | ---------
 ID | integer | Sim | ID da loja
-activate | boolean | Sim | Ativa o tema na loja
+activate | boolean | Sim | Ativa/Desativa o tema na loja
 
 ### Status Code Responses
 
 Código | Descrição
 ------ | ---------
-204 | No Content -- Tema ativado com sucesso
-400 | Bad Request -- Erro ao ativar tema
-404 | Not Found -- Tema não encontrado/instalado
+204 | No Content -- Tema ativado/desativado com sucesso
+400 | Bad Request -- Erro ao ativar/desativar tema
+404 | Not Found -- Tema/Conta não encontrado/instalado;
 
 <aside class="notice">O ID da loja é obtido através do payload `auth_token`.</aside>
+
+### Request Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
+Authorization | Bearer `auth_token`
+
+### Response Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
 
 ## Lista todos os temas
 
@@ -258,12 +394,7 @@ Código | Descrição
 import requests, json
 
 api_url = 'https://api.awsli.com.br/v2/themes'
-auth_token = 'JWT_AUTH_TOKEN' # JWT Token extraido da query string
-headers = {
-  'Authorization: Bearer %s' % auth_token
-}
-
-response = requests.get(api_url, headers=headers)
+response = requests.get(api_url)
 if response.status_code == 200:
   print response.json()
 ```
@@ -294,12 +425,19 @@ if response.status_code == 200:
 }
 ```
 
+<aside class="notice">Esse endpoint não precisa de autenticação</aside>
+
 Lista todos os temas instalados
 
 ### HTTP Request
 
 `GET http://api.awsli.com.br/v2/themes`
 
+### Response Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
 
 ## Lista um tema específico
 
@@ -307,12 +445,7 @@ Lista todos os temas instalados
 import requests, json
 
 api_url = 'https://api.awsli.com.br/v2/themes/65'
-auth_token = 'JWT_AUTH_TOKEN' # JWT Token extraido da query string
-headers = {
-  'Authorization: Bearer %s' % auth_token
-}
-
-response = requests.get(api_url, headers=headers)
+response = requests.get(api_url)
 if response.status_code == 200:
   print response.json()
 ```
@@ -334,6 +467,14 @@ if response.status_code == 200:
 
 Lista um tema específico
 
+<aside class="notice">Esse endpoint não precisa de autenticação</aside>
+
 ### HTTP Request
 
 `GET http://api.awsli.com.br/v2/themes`
+
+### Response Headers
+
+Nome | Valor
+---- | ----- 
+Content-Type  | application/json 
